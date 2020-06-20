@@ -23,7 +23,6 @@ public class PacketSender extends Thread {
             // See this link: https://www.geeksforgeeks.org/socket-programming-in-java/
 
 
-
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -144,6 +143,14 @@ public class PacketSender extends Thread {
         return Integer.toHexString(sum);                //conver to HEX
     }
 
+    private static String addPadding(String str) {
+        
+        while (str.length() % 8 != 0) {
+            str=str+"0";
+        }
+        return str;
+    }
+
     private static String encodeMessage(String cIp, String sIp, String pl) {
 
         String idField = createId();
@@ -158,7 +165,7 @@ public class PacketSender extends Thread {
 
         String checksum = calculateChecksum("4500"+length+idField+"40004006"+clientIP+serverIP);          ///LAST STEP: CALCULATE CHECKSUM
 
-        String datagram = "4500"+length+idField+"40004006"+checksum+clientIP+serverIP+payload;
+        String datagram = "4500"+length+idField+"40004006"+checksum+clientIP+serverIP+addPadding(payload);
 
         return splitEveryFour(datagram);
 
