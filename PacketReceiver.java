@@ -1,11 +1,7 @@
 import java.net.*;
 import java.io.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Random;
 import java.lang.Integer;
 import java.lang.String;
-import java.util.Arrays;
 
 public class PacketReceiver extends Thread {
 
@@ -27,40 +23,6 @@ public class PacketReceiver extends Thread {
         } catch (Exception e) {
             System.out.println(e);
         }
-    }
-
-    public static String getMessage(String stream){
-
-        String[] myStream = stream.split(" ");
-
-        String head = myStream[0];
-        String lengthIP = myStream[1];
-        String idField = myStream[2];
-        String flags = myStream[3];
-        String tcp = myStream[4];
-        String checksum = myStream[5];
-        String ipsource = myStream[6]+" "+myStream[7];
-        String ipdest = myStream[8]+" "+myStream[9];
-        String[] message = Arrays.copyOfRange(myStream, 10, myStream.length);
-
-        // System.out.println(head);
-        // System.out.println(lengthIP);
-        // System.out.println(idField);
-        // System.out.println(flags);
-        // System.out.println(tcp);
-        // System.out.println(checksum);
-        // System.out.println(ipsource);
-        // System.out.println(ipdest);
-        // System.out.println(message);
-
-        boolean check = verifyChecksum(head, lengthIP, idField, flags, tcp, checksum, ipsource, ipdest);
-        //System.out.println(check);
-        if (!check){
-            return "The verification of the checksum demonstrates that the packet received is corrupted. Packet discarded!";
-        }
-
-        
-        return "ok";
     }
 
     public static boolean verifyChecksum(String head, String lengthIP, String idField, String flags, String tcp, String checksum, String ipsource, String ipdest){
@@ -109,12 +71,97 @@ public class PacketReceiver extends Thread {
         return false;
     }
 
+    public static String getIP(String ip){
+
+        int num1 = Integer.parseInt(ip.substring(0,2),16);
+        int num2 = Integer.parseInt(ip.substring(2,4),16);
+        int num3 = Integer.parseInt(ip.substring(5,7),16);
+        int num4 = Integer.parseInt(ip.substring(7),16);
+
+        // System.out.println(num1);
+        // System.out.println(num2);
+        // System.out.println(num3);
+        // System.out.println(num4);
+
+        return num1+"."+num2+"."+num3+"."+num4;
+    }
+
+    public static String getText(String hex){
+        StringBuilder sb = new StringBuilder("");
+        for (int i=0; i< hex.length(); i += 2){
+            String character = hex.substring(i, i+2);
+            sb.append((char) Integer.parseInt(character,16));
+        }
+        return sb.toString();
+    }
+
+
+    public static void getMessage(String stream){
+
+        String[] myStream = stream.split(" ");
+
+        String head = myStream[0];
+        String lengthIP = myStream[1];
+        String idField = myStream[2];
+        String flags = myStream[3];
+        String tcp = myStream[4];
+        String checksum = myStream[5];
+        String ipsource = myStream[6]+" "+myStream[7];
+        String ipdest = myStream[8]+" "+myStream[9];
+        //String[] message = Arrays.copyOfRange(myStream, 10, myStream.length);
+
+        String message = "";
+        for (int i=10; i<myStream.length; i++){
+            message += myStream[i];
+        }
+        //System.out.println(message);
+
+        // System.out.println(head);
+        // System.out.println(lengthIP);
+        // System.out.println(idField);
+        // System.out.println(flags);
+        // System.out.println(tcp);
+        // System.out.println(checksum);
+        // System.out.println(ipsource);
+        // System.out.println(ipdest);
+        // System.out.println(message);
+
+        // Verify the checksum
+        boolean check = verifyChecksum(head, lengthIP, idField, flags, tcp, checksum, ipsource, ipdest);
+        //System.out.println(check);
+        if (!check){
+            System.out.println("The verification of the checksum demonstrates that the packet received is corrupted. Packet discarded!");
+        } else {
+            // Find the IP addresses
+            String ipsourceWord = getIP(ipsource);
+            String ipdestWord = getIP(ipdest);
+
+            // System.out.println(ipsourceWord);
+            // System.out.println(ipdestWord);
+
+            // Find payload and length of the packet
+            int lengthPacket = Integer.parseInt(lengthIP.substring(2,4),16);
+            int payload = Integer.parseInt(lengthIP.substring(0,2),16)+20;
+
+            // System.out.println(payload);
+            // System.out.println(lengthPacket);
+
+            // Find the message
+            String decodedMessage = getText(message);
+            //System.out.println(decodedMessage);
+            
+            System.out.println("Receives the data stream and prints to the screen the data received with the following message:");
+            System.out.println("The data received from "+ipsourceWord+" is "+decodedMessage);
+            System.out.println("The data has "+(8*payload)+" bites or "+payload+" bytes. Total length of the packet is "+lengthPacket+" bytes.");
+            System.out.println("The verification of the checksum demonstrates that the packet received is correct.");
+        }
+    }
 
     public static void main(String[] args) throws Exception {
 
-        //PacketReceiver pacRec = new PacketReceiver(5000);
+        PacketReceiver pacRec = new PacketReceiver(5000);
 
-        getMessage("4500 0028 1c46 4000 4006 9D35 C0A8 0003 C0A8 0001 434f 4c4f 4d42 4941 2032 202d 204d 4553 5349 2030");
+        //getMessage("4500 0028 1c46 4000 4006 9D34 C0A8 0003 C0A8 0001 434f 4c4f 4d42 4941 2032 202d 204d 4553 5349 2030");
 
         //4500[fixed] 0028[length IP] 1c46[ID field] 4000[fixed] 4006[fixed] 9D35[checksum] C0A8 0003 [IP source] C0A8 0001 [IP destination] 
         //// 434f 4c4f 4d42 4941 2032 202d 204d 4553 5349 2030 (Word)
