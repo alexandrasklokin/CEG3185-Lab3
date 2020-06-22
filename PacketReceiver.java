@@ -16,13 +16,32 @@ public class PacketReceiver extends Thread {
 
             socket = server.accept();
             System.out.println("__ Client accepted __ ");
+            System.out.println("_______________________________________________________");
 
             // RECEIVE THE DATA  //////////////////////////////////////////////////////////////////////////////////////////////////////
             // See this link: https://www.geeksforgeeks.org/socket-programming-in-java/
+            in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+            String datagram = in.readUTF();
+            System.out.println("Datagram received: "+datagram);
+            datagram = removePadding(datagram);
+            System.out.println("Datagram received (without padding): "+datagram);
+            System.out.println("_______________________________________________________");
+            getMessage(datagram);
+
         
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private static String removePadding(String str) {
+
+        String[] strs = str.split(" ");
+        
+        int lengthIPdec = Integer.parseInt(strs[1],16);
+
+        str = str.substring(0,(lengthIPdec*2)+(lengthIPdec/2));
+        return str;
     }
 
     public static boolean verifyChecksum(String head, String lengthIP, String idField, String flags, String tcp, String checksum, String ipsource, String ipdest){

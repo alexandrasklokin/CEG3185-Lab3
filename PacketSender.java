@@ -9,7 +9,6 @@ import java.lang.String;
 public class PacketSender extends Thread {
 
     private Socket socket = null;
-    private DataInputStream input = null;
     private DataOutputStream out = null;
 
     public PacketSender(String address, int port, String datagram) {
@@ -17,10 +16,12 @@ public class PacketSender extends Thread {
             socket = new Socket(address, port);
             System.out.println("__ Client is connected to server __ ");
 
-            System.out.println("Datagram to send: "+ datagram);
+            System.out.println("Datagram to send (with padding): "+ datagram);
 
             // SEND THE DATA //////////////////////////////////////////////////////////////////////////////////////////////////////
             // See this link: https://www.geeksforgeeks.org/socket-programming-in-java/
+            out = new DataOutputStream (socket.getOutputStream());
+            out.writeUTF(datagram);
 
 
         } catch (Exception e) {
