@@ -125,21 +125,26 @@ public class PacketSender extends Thread {
         for (int i=0; i<words.length; i++) {
             int temp = Integer.parseInt(words[i], 16);
             sum +=temp;
+            //System.out.println("i= "+i+" : "+Integer.toHexString(sum));
         }
         
         String checksum = Integer.toHexString(sum);
-
+        //System.out.println(checksum);
+        
         //WRAPPING THE SUM
         if (checksum.length()!=4) {
 
-            int first = checksum.charAt(0);         //first number
+            //int first = checksum.charAt(0);         //first number
+            String first2 = checksum.substring(0,1);
+            //System.out.println(first);
             checksum = checksum.substring(1);       // rest of the checksum
-
-            sum = Integer.parseInt(checksum, 16)+first;   //add em
-
+            //System.out.println(checksum);
+            sum = Integer.parseInt(checksum, 16)+Integer.parseInt(first2, 16);   //add em
+            //System.out.println(sum);
         }
 
         sum = 65535 - sum;
+        //System.out.println(sum);
 
         return Integer.toHexString(sum);                //conver to HEX
     }

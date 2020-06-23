@@ -41,6 +41,7 @@ public class PacketReceiver extends Thread {
         int lengthIPdec = Integer.parseInt(strs[1],16);
 
         str = str.substring(0,(lengthIPdec*2)+(lengthIPdec/2));
+        System.out.println(str);
         return str;
     }
 
@@ -52,14 +53,14 @@ public class PacketReceiver extends Thread {
         String ipdest1 = ipdest.substring(0,4);
         String ipdest2 = ipdest.substring(5);
 
-        // System.out.println(ipsource1);
-        // System.out.println(ipsource2);
-        // System.out.println(ipdest1);
-        // System.out.println(ipdest2);
+        System.out.println(ipsource1);
+        System.out.println(ipsource2);
+        System.out.println(ipdest1);
+        System.out.println(ipdest2);
 
 
         int headDec = Integer.parseInt(head,16);
-        //System.out.println(headDec);
+        System.out.println(headDec);
         int lengthIPdec = Integer.parseInt(lengthIP,16);
         int idFieldDec = Integer.parseInt(idField,16);
         int flagsDec = Integer.parseInt(flags,16);
@@ -73,7 +74,7 @@ public class PacketReceiver extends Thread {
         int sum = headDec+lengthIPdec+idFieldDec+flagsDec+tcpDec+checksumDec+ipsourceDec1+ipsourceDec2+ipdestDec1+ipdestDec2;
 
         String sumHex = Integer.toHexString(sum);
-        //System.out.println(sumHex);
+        System.out.println(sumHex);
         if (sumHex.length() > 4){
             String carry = sumHex.substring(0,1);
             sumHex = sumHex.substring(1);
@@ -83,7 +84,7 @@ public class PacketReceiver extends Thread {
             sumHex = Integer.toHexString(sum);
         }
 
-        //System.out.println(sumHex);
+        System.out.println(sumHex);
         if (sumHex.equals("ffff")){
             return true;
         }
@@ -181,6 +182,8 @@ public class PacketReceiver extends Thread {
         PacketReceiver pacRec = new PacketReceiver(5000);
 
         //getMessage("4500 0028 1c46 4000 4006 9D34 C0A8 0003 C0A8 0001 434f 4c4f 4d42 4941 2032 202d 204d 4553 5349 2030");
+
+        //4500 0028 e7a5 4000 4006 cf8d c0a8 021b c0a8 0001 434f 4c4f 4d42 4945 2032 202d 204d 4553 5349 2030 
 
         //4500[fixed] 0028[length IP] 1c46[ID field] 4000[fixed] 4006[fixed] 9D35[checksum] C0A8 0003 [IP source] C0A8 0001 [IP destination] 
         //// 434f 4c4f 4d42 4941 2032 202d 204d 4553 5349 2030 (Word)
